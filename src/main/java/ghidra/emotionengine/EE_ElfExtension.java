@@ -63,6 +63,26 @@ public class EE_ElfExtension extends MIPS_ElfExtension {
 		return "_EE";
 	}
 
+	/**
+	 * Claim only PS2 ELFs: EF_MIPS_MACH = 5900, the IOP/EE module types, or MIPS I / MIPS III files without
+	 * a machine variant (older PS2 toolchains). Without this check the extension (priority 2) claimed every
+	 * MIPS ELF, e.g. the PSP's Allegrex executables (kotcrab/ghidra-allegrex #49). (Ghidra-Rare)
+	 */
+	@Override
+	public boolean canHandle(ElfHeader elf) {
+		if (!super.canHandle(elf)) {
+			return false;
+		}
+		int flags = elf.e_flags();
+		int mach = flags & 0x00ff0000;
+		int arch = flags & 0xf0000000;
+		short type = elf.e_type();
+		if (mach == E_MIPS_MACH_5900 || type == ET_IRX || type == ET_IRX2 || type == ET_ERX2) {
+			return true;
+		}
+		return mach == 0 && (arch == 0x00000000 || arch == 0x20000000);
+	}
+
 	@Override
 	public boolean canHandle(ElfLoadHelper elfLoadHelper) {
 		return EE_Util.isEmotionEngine(elfLoadHelper.getProgram());
