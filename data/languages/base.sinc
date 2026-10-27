@@ -155,8 +155,10 @@ define token instr(32)
     vulop6       = (0,5)
     vul24        = (24,24)
     vul22_24     = (22,24)
+@include "lanefields.sinc"
 ;
 
+@include "lanes.sinc"
 
 # 64 bit
 attach variables [ rs rt rd base ] [
