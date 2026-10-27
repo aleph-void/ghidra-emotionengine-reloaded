@@ -28,23 +28,25 @@ public class ImportMMIORegisterLabels extends GhidraScript {
             );
         }
         
-        AddressSpace ram = currentProgram.getAddressFactory().getAddressSpace("ram");
-        List<Register> registers = currentProgram.getLanguage().getRegisters();
-        for(Register register : registers) {
-			monitor.checkCanceled();
-            if(register.getAddressSpace() == ram) {
-                Symbol[] oldSymbols = currentProgram.getSymbolTable().getSymbols(register.getAddress());
-                for(Symbol symbol : oldSymbols) {
-                    symbol.delete();
-                }
-                
-                currentProgram.getSymbolTable().createLabel(
-                    register.getAddress(),
-                    register.getName(),
-                    registerNamespace,
-                    SourceType.USER_DEFINED
-                );
+        // The register names are the language's default symbols (r5900.pspec): move them into the
+        // "registers" namespace (Ghidra-Rare: they used to be SLEIGH symbols in the ram space, which
+        // stopped reference creation, upstream issue #93).
+        for(ghidra.program.model.lang.AddressLabelInfo info : currentProgram.getLanguage().getDefaultSymbols()) {
+            monitor.checkCancelled();
+            Address address = info.getAddress();
+            if(address.getOffset() < 0x10000000L || address.getOffset() >= 0x12002000L) {
+                continue;
             }
+            Symbol[] oldSymbols = currentProgram.getSymbolTable().getSymbols(address);
+            for(Symbol symbol : oldSymbols) {
+                symbol.delete();
+            }
+            currentProgram.getSymbolTable().createLabel(
+                address,
+                info.getLabel(),
+                registerNamespace,
+                SourceType.USER_DEFINED
+            );
         }
     }
 
