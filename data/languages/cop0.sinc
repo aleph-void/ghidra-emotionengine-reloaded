@@ -23,6 +23,7 @@ define register offset=0x2200 size=4 [
     PCCR        PCR0        PCR1
 ];
 
+# register 24 (debug) and 25 (performance counters) are reached through MFBPC... / MFPS... below
 attach variables [ rd0 ] [
     Index       Random      EntryLo0    EntryLo1
     Context     PageMask    Wired       cop0reg.7
@@ -30,20 +31,23 @@ attach variables [ rd0 ] [
     Status      Cause       EPC         PRId
     Config      cop0reg.17  cop0reg.18  cop0reg.19
     cop0reg.20  cop0reg.21  cop0reg.22  BadPAddr
-    Debug       Perf        cop0reg.26  cop0reg.27
+    _           _           cop0reg.26  cop0reg.27
     TagLo       TagHi       ErrorPC     cop0reg.31
 ];
 
-attach variables [ reg ] [
-    PCR0        PCR1
-];
 
 RD0: rd0        is rd0              { export rd0; }
-PCR: reg        is reg              { export reg; }
 
 # getCopCondition(cop_num, cc)
 define pcodeop getCopCondition;
+define pcodeop readCount;        # COP0 Count: free-running counter
+define pcodeop readRandom;       # COP0 Random: TLB replacement counter
+define pcodeop readPerfCounter;  # MFPC: performance counter n
+define pcodeop writePerfCounter; # MTPC
+define pcodeop readPerfControl;  # MFPS: performance event specifier n
+define pcodeop writePerfControl; # MTPS
 define pcodeop cacheOp;
+define pcodeop cop0Operation;
 define pcodeop EI;
 define pcodeop DI;
 
@@ -51,18 +55,20 @@ define pcodeop TLB_probe_for_matching_entry;
 define pcodeop TLB_read_indexed_entryHi;
 define pcodeop TLB_read_indexed_entryLo0;
 define pcodeop TLB_read_indexed_entryLo1;
+define pcodeop TLB_read_indexed_pageMask;
 define pcodeop TLB_write_indexed_entry;
 define pcodeop TLB_write_random_entry;
 
+# operation names as in upstream; operations without a name are shown by number
 attach names op [
-    IXLTG IXLDT BXLBT _
+    IXLTG IXLDT BXLBT op3
     IXSTG IXSDT BXSBT IXIN
-    BPR _ BHINBT IHIN
-    BFH _ IFL _
+    BPR op9 BHINBT IHIN
+    BFH op13 IFL op15
     DXLTG DXLDT DXSTG DXSDT
-    DXWBIN _ DXIN _
-    DHWBIN _ DHIN _
-    DHWOIN _ _ _
+    DXWBIN op21 DXIN op23
+    DHWBIN op25 DHIN op27
+    DHWOIN op29 op30 op31
 ];
 
 # Various cache instructions with different ops
@@ -92,7 +98,7 @@ with : prime=16 { # COP0
 
     # Branch on Coprocessor 0 True
     # 0100 0001 0000 0001 iiii iiii iiii iiii
-    :bc0t                                       is copop=8 & op=1 & Rel16 {
+    :bc0t Rel16                                 is copop=8 & op=1 & Rel16 {
         tmp:1 = getCopCondition(0:1, 0:1);
         delayslot(1);
         if (tmp == 0) goto inst_next;
@@ -101,35 +107,46 @@ with : prime=16 { # COP0
 
     #Branch on Coprocessor 0 True Likely
     # 0100 0001 0000 0011 iiii iiii iiii iiii
-    :bc0fl Rel16                                is copop=8 & op=3 & Rel16 {
+    :bc0tl Rel16                                is copop=8 & op=3 & Rel16 {
         tmp:1 = getCopCondition(0:1, 0:1);
         if (tmp == 0) goto inst_next;
         delayslot(1);
         goto Rel16;
     }
     
-    # Disable Interrupts
-    #0100 0010 0000 0000 0000 0000 0011 1000
+    # Disable Interrupts: clears Status.EIE, if in kernel mode or Status.EDI is set
     :di                                         is bit25=1 & fct=0x39 & copfill=0 {
-        DI();
+        if ((Status & 0x20006) == 0 && (Status & 0x18) != 0) goto inst_next;
+        Status = Status & ~0x10000;
     }
 
-    # Enable Interrupts
-    #0100 0010 0000 0000 0000 0000 0011 1000
+    # Enable Interrupts: sets Status.EIE, if in kernel mode or Status.EDI is set
     :ei                                         is bit25=1 & fct=0x38 & copfill=0 {
-        EI();
+        if ((Status & 0x20006) == 0 && (Status & 0x18) != 0) goto inst_next;
+        Status = Status | 0x10000;
     }
     
-    # Exception Return
-    # 0100 0010 0000 0000 0000 0000 0001 1000
+    # Exception Return (no delay slot)
     :eret                                       is fct=0x18 & bit25=1 & copfill=0  {
-        return[EPC];
+        if ((Status & 4) == 0) goto <exl>;
+        Status = Status & ~4;
+        return [ErrorPC];
+        <exl>
+        Status = Status & ~2;
+        return [EPC];
     }
 
     # Move from System Control Coprocessor
     # 0100 0000 000t tttt dddd d000 0000 0sss
     :mfc0 RT, RD0                               is copop=0 & RT & RD0 & mfcop=0 {
         RT = sext(RD0);
+    }
+
+    :mfc0 RT, RD0                               is copop=0 & RT & RD0 & rd=9 & mfcop=0 {
+        tmp:4 = readCount(); RT = sext(tmp);
+    }
+    :mfc0 RT, RD0                               is copop=0 & RT & RD0 & rd=1 & mfcop=0 {
+        tmp:4 = readRandom(); RT = sext(tmp);
     }
 
     # Move from Debug Registers
@@ -170,14 +187,26 @@ with : prime=16 { # COP0
         RT = sext(IABM);
     }
     
-    # Move from Performance Counter
-    :mfpc RT, PCR                               is copop=0 & RT & rd=25 & zero5=0 & PCR & reg0=0 & bit0=1 {
-        RT = sext(PCR);
+    # Move from Performance Counter / Event Specifier (bits 5..1: register number)
+    :mfpc RT, pcreg                             is copop=0 & RT & rd=25 & zero5=0 & pcreg & bit0=1 {
+        tmp:4 = readPerfCounter(pcreg:1); RT = sext(tmp);
     }
     
-    # Move from Performance Event Specifier
-    :mfps RT, 0                                 is copop=0 & RT & rd=25 & zero5=0 & reg=0 & reg0=0 & bit0=0 {
-        RT = sext(PCCR);
+    :mfps RT, pcreg                             is copop=0 & RT & rd=25 & zero5=0 & pcreg & bit0=0 {
+        tmp:4 = readPerfControl(pcreg:1); RT = sext(tmp);
+    }
+    # the all-zero low field overlaps MFC0/MTC0: these two more specific forms win
+    :mfps RT, pcreg                             is copop=0 & RT & rd=25 & mfcop=0 & pcreg {
+        tmp:4 = readPerfControl(pcreg:1); RT = sext(tmp);
+    }
+    :mtps RT32src, pcreg                        is copop=4 & RT32src & rd=25 & mfcop=0 & pcreg {
+        writePerfControl(pcreg:1, RT32src);
+    }
+    :mtpc RT32src, pcreg                        is copop=4 & RT32src & rd=25 & zero5=0 & pcreg & bit0=1 {
+        writePerfCounter(pcreg:1, RT32src);
+    }
+    :mtps RT32src, pcreg                        is copop=4 & RT32src & rd=25 & zero5=0 & pcreg & bit0=0 {
+        writePerfControl(pcreg:1, RT32src);
     }
     
     # Move to System Control Coprocessor
@@ -234,7 +263,7 @@ with : prime=16 { # COP0
         EntryHi = TLB_read_indexed_entryHi(Index);
         EntryLo0 = TLB_read_indexed_entryLo0(Index);
         EntryLo1 = TLB_read_indexed_entryLo1(Index);
-        PageMask = TLB_read_indexed_entryLo1(Index);
+        PageMask = TLB_read_indexed_pageMask(Index);
     }
     
     # Write Index TLB Entry
@@ -246,6 +275,8 @@ with : prime=16 { # COP0
     :tlbwr                                      is bit25=1 & copfill=0 & fct=6 {
         TLB_write_random_entry(Random, EntryHi, EntryLo0, EntryLo1, PageMask);
     }
-    
-    :cop0 immed26                       is immed26 { }
+    # any other coprocessor operation (CO bit set): GNU objdump's "c0"
+    :c0 imm25                           is bit25=1 & imm25 {
+        cop0Operation(imm25:4);
+    }
 }

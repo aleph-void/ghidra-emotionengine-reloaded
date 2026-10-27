@@ -5,15 +5,26 @@
 define pcodeop trap;
 define pcodeop prefetch;
 define pcodeop syscall;
+define pcodeop integerOverflow;   # integer overflow exception (ADD/ADDI/SUB/DADD/DADDI/DSUB)
 
 # 0000 00ss ssst tttt dddd d000 0010 0000
 :add RD32, RS32src, RT32src				is prime=0 & zero5=0 & fct=32 & RD32 & RS32src & RT32src & RD {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = scarry(RS32src, RT32src);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RD32 = RS32src + RT32src;
     RD = sext(RD32);
 }
 
 # 0010 00ss ssst tttt iiii iiii iiii iiii
 :addi RT32, RS32src, simmed         	is prime=8 & RT32 & RS32src & simmed & RT {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = scarry(RS32src, simmed);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RT32 = RS32src + simmed;
     RT = sext(RT32);
 }
@@ -35,6 +46,10 @@ define pcodeop syscall;
 :addu RD32, RS32src, RT32src          	is prime=0 & zero5=0 & fct=33 & RS32src & RT32src & RD32 & RD {
     RD32 = RS32src + RT32src;
     RD = sext(RD32);
+}
+# ADDU rd, rs, $zero: GNU objdump's "move" (the value is sign-extended from 32 bits)
+:move RD, RS32src          	is prime=0 & zero5=0 & fct=33 & RS32src & rt=0 & RD {
+    RD = sext(RS32src);
 }
 
 # 0000 00ss ssst tttt dddd d000 0010 0100
@@ -61,6 +76,27 @@ define pcodeop syscall;
     if delayflag goto Rel16;
 }
 
+:beqz RSsrc, Rel16        		is prime=4 & RSsrc & rt=0 & Rel16 {
+    delayflag:1 = ( RSsrc == 0 );
+    delayslot( 1 );
+    if delayflag goto Rel16;
+}
+:bnez RSsrc, Rel16        		is prime=5 & RSsrc & rt=0 & Rel16 {
+    delayflag:1 = ( RSsrc != 0 );
+    delayslot( 1 );
+    if delayflag goto Rel16;
+}
+:beqzl RSsrc, Rel16       		is prime=20 & RSsrc & rt=0 & Rel16 {
+    if (!(RSsrc==0)) goto inst_next;
+    delayslot(1);
+    goto Rel16;
+}
+:bnezl RSsrc, Rel16       		is prime=21 & RSsrc & rt=0 & Rel16 {
+    if (!(RSsrc!=0)) goto inst_next;
+    delayslot(1);
+    goto Rel16;
+}
+
 # 0101 00ss ssst tttt iiii iiii iiii iiii
 :beql RSsrc, RTsrc, Rel16       		is prime=20 & RSsrc & RTsrc & Rel16 {
     if (!(RSsrc==RTsrc)) goto inst_next;
@@ -75,20 +111,26 @@ define pcodeop syscall;
     if delayflag goto Rel16;
 }
 
-# 0000 01ss sss1 0001 iiii iiii iiii iiii
-:bgezal RSsrc, Rel16            		is prime=1 & cond=17 & RSsrc & Rel16 {
+# BGEZAL $zero: BAL
+:bal Rel16            		is prime=1 & cond=17 & rs=0 & Rel16 {
     ra = inst_next;
+    delayslot( 1 );
+    call Rel16;
+}
+
+:bgezal RSsrc, Rel16            		is prime=1 & cond=17 & RSsrc & Rel16 {
     delayflag:1 = ( RSsrc s>= 0 );
+    ra = inst_next;
     delayslot( 1 );
     if (!delayflag) goto inst_next;
     call Rel16;
 }
 
-# 0000 01ss sss1 0011 iiii iiii iiii iiii
-:bgezall RSsrc, Rel16           		is prime=1 & cond=19 & RSsrc & Rel16 {
+:bgezall RSsrc, Rel16            		is prime=1 & cond=19 & RSsrc & Rel16 {
+    delayflag:1 = ( RSsrc s>= 0 );
     ra = inst_next;
-    if (!(RSsrc s>= 0)) goto inst_next;
-    delayslot( 1 );
+    if (!delayflag) goto inst_next;
+    delayslot(1);
     call Rel16;
 }
 
@@ -134,19 +176,18 @@ define pcodeop syscall;
     if delayflag goto Rel16;
 }
 
-# 0000 01ss sss1 0000 iiii iiii iiii iiii
 :bltzal RSsrc, Rel16            		is prime=1 & cond=16 & RSsrc & Rel16 {
-    ra = inst_next;
     delayflag:1 = ( RSsrc s< 0 );
+    ra = inst_next;
     delayslot( 1 );
     if (!delayflag) goto inst_next;
     call Rel16;
 }
 
-# 0000 01ss sss1 0010 iiii iiii iiii iiii
-:bltzall RSsrc, Rel16           		is prime=1 & cond=18 & RSsrc & Rel16 {
+:bltzall RSsrc, Rel16            		is prime=1 & cond=18 & RSsrc & Rel16 {
+    delayflag:1 = ( RSsrc s< 0 );
     ra = inst_next;
-    if (!(RSsrc s< 0)) goto inst_next;
+    if (!delayflag) goto inst_next;
     delayslot(1);
     call Rel16;
 }
@@ -180,11 +221,21 @@ define pcodeop syscall;
 
 # 0000 00ss ssst tttt dddd d000 0010 1100
 :dadd RD, RSsrc, RTsrc          		is prime=0 & fct=44 & RSsrc & RTsrc & RD & zero5=0 {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = scarry(RSsrc, RTsrc);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RD = RSsrc + RTsrc;
 }
 
 # 0110 00ss ssst tttt iiii iiii iiii iiii
 :daddi RT, RSsrc, simmed        		is prime=24 & RSsrc & RT & simmed {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = scarry(RSsrc, simmed);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RT = RSsrc + simmed;
 }
 
@@ -205,19 +256,16 @@ define pcodeop syscall;
 }
 
 # 0000 00ss ssst tttt 0000 0000 0001 1010
-:div RS32src, RT32src                   is prime=0 & fct=26 & zero10 & RS32src & RT32src {
-    quotient:4 = RS32src s/ RT32src;
-    remainder:4 = RS32src s% RT32src;
-    lo = sext(quotient);
-    hi = sext(remainder);
+# (a zero divisor gives UNPREDICTABLE results and no exception)
+:div RS32src, RT32src                   is prime=0 & fct=26 & zero10=0 & RS32src & RT32src {
+    lo = sext(RS32src s/ RT32src);
+    hi = sext(RS32src s% RT32src);
 }
 
 # 0000 00ss ssst tttt 0000 0000 0001 1011
 :divu RS32src, RT32src                  is prime=0 & fct=27 & zero10=0 & RS32src & RT32src {
-    quotient:4 = RS32src s/ RT32src;
-    remainder:4 = RS32src s% RT32src;
-    lo = sext(quotient);
-    hi = sext(remainder);
+    lo = sext(RS32src / RT32src);
+    hi = sext(RS32src % RT32src);
 }
 
 # 0000 0000 000t tttt dddd daaa aa11 1000
@@ -230,9 +278,8 @@ define pcodeop syscall;
     RD = RTsrc << (32 + sa);
 }
 
-# 0000 00ss ssst tttt dddd d000 0001 0100
-:dsllv RD, RTsrc, RSsrc					is prime=0 & fct=20 & RD & RTsrc & RSsrc {
-    RD = RTsrc << RSsrc;
+:dsllv RD, RTsrc, RSsrc					is prime=0 & fct=20 & RD & RTsrc & RSsrc & sa=0 {
+    RD = RTsrc << (RSsrc & 0x3f);
 }
 
 # 0000 0000 000t tttt dddd daaa aa11 1011
@@ -245,12 +292,9 @@ define pcodeop syscall;
     RD = RTsrc s>> (sa + 32);
 }
 
-# Special Case, does nothing. Unwanted outputs are occasionally have RD as the zero register
-:dsra32 RD, RTsrc, sa           		is prime=0 & fct=63 & RTsrc & RD & rd=0 & sa {}
-
 # 0000 00ss ssst tttt dddd d000 0001 0111
 :dsrav RD, RTsrc, RSsrc         		is prime=0 & fct=23 & RSsrc & RTsrc & RD & sa=0 {
-    RD = RTsrc s>> RSsrc;
+    RD = RTsrc s>> (RSsrc & 0x3f);
 }
 
 # 0000 0000 000t tttt dddd daaa aa11 1010
@@ -263,19 +307,34 @@ define pcodeop syscall;
     RD = RTsrc >> (sa + 32);
 }
 
-# 0000 00ss ssst tttt dddd d000 0101 0110
-:dsrlv RD, RTsrc, RSsrc         		is prime=0 & fct=22 & RSsrc & RTsrc & RD & sa=0 {
-    RD = RTsrc >> RSsrc;
+:dsrlv RD, RTsrc, RSsrc					is prime=0 & fct=22 & RD & RTsrc & RSsrc & sa=0 {
+    RD = RTsrc >> (RSsrc & 0x3f);
 }
 
 # 0000 00ss ssst tttt dddd d000 0010 1110
 :dsub RD, RSsrc, RTsrc          		is prime=0 & fct=46 & RSsrc & RTsrc & RD & sa=0 {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = sborrow(RSsrc, RTsrc);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RD = RSsrc - RTsrc;
+}
+:dneg RD, RTsrc          		is prime=0 & fct=46 & rs=0 & RTsrc & RD & sa=0 {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = sborrow(0:8, RTsrc);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
+    RD = 0 - RTsrc;
 }
 
 # 0000 00ss ssst tttt dddd d000 0010 1111
 :dsubu RD, RSsrc, RTsrc         		is prime=0 & fct=47 & RSsrc & RTsrc & RD & sa=0 {
     RD = RSsrc - RTsrc;
+}
+:dnegu RD, RTsrc         		is prime=0 & fct=47 & rs=0 & RTsrc & RD & sa=0 {
+    RD = 0 - RTsrc;
 }
 
 # 0000 10aa aaaa aaaa aaaa aaaa aaaa aaaa
@@ -292,31 +351,32 @@ define pcodeop syscall;
 }
 
 # 0000 00ss sss0 0000 dddd d000 0000 1001
-:jalr RD, RSsrc                 		is prime=0 & fct=9 & RSsrc & rt=0 & RD {
+:jalr RD, RSsrc                 		is prime=0 & fct=9 & RSsrc & rt=0 & sa=0 & RD {
+    tmp:4 = RSsrc:4;
     RD = inst_next;
     delayslot(1);
-    tmp:4 = RSsrc:4;
     call [tmp];
 }
 
-# 0000 00ss sss0 0000 dddd d000 0000 1001
-:jalr RSsrc                     		is prime=0 & fct=9 & RSsrc & rt=0 & rd=31 {
+# 0000 00ss sss0 0000 1111 1000 0000 1001
+:jalr RSsrc                     		is prime=0 & fct=9 & RSsrc & rt=0 & rd=31 & sa=0 {
+    tmp:4 = RSsrc:4;
     ra = inst_next;
     delayslot(1);
-    tmp:4 = RSsrc:4;
     call [tmp];
 }
 
 # 0000 00ss sss0 0000 0000 0000 0000 1000
-:jr RSsrc                       		is prime=0 & fct=8 & RSsrc & rt=0 & rd=0 {
-    delayslot(1);
+:jr RSsrc                       		is prime=0 & fct=8 & RSsrc & rt=0 & rd=0 & sa=0 {
     tmp:4 = RSsrc:4;
+    delayslot(1);
     goto [tmp];
 }
 
-:jr ra                                  is prime=0 & fct=8 & rs=31 & ra & rt=0 & rd=0 {
+:jr "ra"                                is prime=0 & fct=8 & rs=31 & rt=0 & rd=0 & sa=0 {
+    tmp:4 = ra:4;
     delayslot(1);
-    return [ra];
+    return [tmp];
 }
 
 # 1000 00bb bbbt tttt iiii iiii iiii iiii
@@ -451,15 +511,7 @@ define pcodeop syscall;
     lo = RSsrc;
 }
 
-# 0000 00ss sss0 0000 0000 0000 0001 0001
-:clear hi                     		is prime=0 & hi & fct=17 & RSsrc & rs=0 & rt=0 & rd=0 & sa=0 {
-    hi = 0;
-}
 
-# 0000 00ss sss0 0000 0000 0000 0001 0011
-:clear lo                     		is prime=0 & fct=19 & lo & RSsrc & rs=0 & rt=0 & rd=0 & sa=0 {
-    lo = 0;
-}
 
 # 0000 00ss ssst tttt 0000 0000 0001 1000
 :mult RS32src, RT32src              	is prime=0 & fct=24 & RS32src & RT32src & rd=0 & sa=0 {
@@ -611,13 +663,32 @@ define pcodeop syscall;
 
 # 0000 00ss ssst tttt dddd d000 0010 0010
 :sub RD32, RS32src, RT32src           	is prime=0 & fct=34 & RS32src & RT32src & RD32 & sa=0 & RD {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = sborrow(RS32src, RT32src);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
     RD32 = RS32src - RT32src;
+    RD = sext(RD32);
+}
+# NEG: SUB from $zero
+:neg RD32, RT32src           	is prime=0 & fct=34 & rs=0 & RT32src & RD32 & sa=0 & RD {
+    # the result is not written when the overflow exception is taken
+    ovf:1 = sborrow(0:4, RT32src);
+    if (!ovf) goto <ok>;
+    integerOverflow();
+    <ok>
+    RD32 = 0 - RT32src;
     RD = sext(RD32);
 }
 
 # 0000 00ss ssst tttt dddd d000 0010 0011
 :subu RD32, RS32src, RT32src          	is prime=0 & fct=35 & RS32src & RT32src & RD32 & sa=0 & RD {
     RD32 = RS32src - RT32src;
+    RD = sext(RD32);
+}
+:negu RD32, RT32src          	is prime=0 & fct=35 & rs=0 & RT32src & RD32 & sa=0 & RD {
+    RD32 = 0 - RT32src;
     RD = sext(RD32);
 }
 
@@ -656,9 +727,12 @@ define pcodeop syscall;
 
 define pcodeop SYNC;
 
-# 0000 0000 0000 0000 0000 0yyy yy00 1111
-:sync scalar                    		is prime=0 & fct=15 & szero=0 & stype [ scalar = stype + 0; ] {
-    SYNC(scalar:1);
+# 0000 0000 0000 0000 0000 0000 0000 1111   SYNC (SYNC.L) / SYNC.P (stype 0x10)
+:sync                    		is prime=0 & fct=15 & szero=0 & stype=0 {
+    SYNC(0:1);
+}
+:sync.p                    		is prime=0 & fct=15 & szero=0 & stype=0x10 {
+    SYNC(0x10:1);
 }
 
 # 0000 00cc cccc cccc cccc cccc cc00 1100
@@ -666,90 +740,81 @@ define pcodeop SYNC;
     syscall(v1);
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0100
-:teq RSsrc, RTsrc              	 		is prime=0 & fct=52 & RSsrc & RTsrc & code {
+TCODE: "" is code=0 { }
+TCODE: ", "^code is code { }
+
+:teq RSsrc, RTsrc^TCODE             		is prime=0 & fct=52 & RSsrc & RTsrc & code & TCODE {
     if (RSsrc != RTsrc) goto <done>;
-    tmp:2=code;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 01ss sss0 1100 iiii iiii iiii iiii
 :teqi RSsrc, simmed             		is prime=1 & cond=12 & RSsrc & simmed {
     if (RSsrc != simmed) goto <done>;
     trap();
     <done>
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0000
-:tge RSsrc, RTsrc               		is prime=0 & fct=48 & RSsrc & RTsrc & code {
-    if (RSsrc < RTsrc) goto <done>;
-    tmp:2=code;
+:tge RSsrc, RTsrc^TCODE             		is prime=0 & fct=48 & RSsrc & RTsrc & code & TCODE {
+    if (RSsrc s< RTsrc) goto <done>;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 01ss sss0 1000 iiii iiii iiii iiii
 :tgei RSsrc, simmed             		is prime=1 & cond=8 & RSsrc & simmed {
     if (RSsrc s< simmed) goto <done>;
     trap();
     <done>
 }
 
-# 0000 01ss sss0 1001 iiii iiii iiii iiii
-:tgeiu RSsrc, simmed            		is prime=1 & cond=9 & RSsrc & simmed {
+:tgeiu RSsrc, simmed             		is prime=1 & cond=9 & RSsrc & simmed {
     if (RSsrc < simmed) goto <done>;
     trap();
     <done>
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0001
-:tgeu RSsrc, RTsrc              		is prime=0 & fct=49 & RSsrc & RTsrc & code {
+:tgeu RSsrc, RTsrc^TCODE             		is prime=0 & fct=49 & RSsrc & RTsrc & code & TCODE {
     if (RSsrc < RTsrc) goto <done>;
-    tmp:2=code;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0010
-:tlt RSsrc, RTsrc              	 		is prime=0 & fct=50 & RSsrc & RTsrc & code {
+:tlt RSsrc, RTsrc^TCODE             		is prime=0 & fct=50 & RSsrc & RTsrc & code & TCODE {
     if (RSsrc s>= RTsrc) goto <done>;
-    tmp:2=code;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 01ss sss0 1010 iiii iiii iiii iiii
 :tlti RSsrc, simmed             		is prime=1 & cond=10 & RSsrc & simmed {
     if (RSsrc s>= simmed) goto <done>;
     trap();
     <done>
 }
 
-# 0000 01ss sss0 1011 iiii iiii iiii iiii
-:tltiu RSsrc, simmed            		is prime=1 & cond=11 & RSsrc & simmed {
+:tltiu RSsrc, simmed             		is prime=1 & cond=11 & RSsrc & simmed {
     if (RSsrc >= simmed) goto <done>;
     trap();
     <done>
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0011
-:tltu RSsrc, RTsrc              		is prime=0 & fct=51 & RSsrc & RTsrc & code {
+:tltu RSsrc, RTsrc^TCODE             		is prime=0 & fct=51 & RSsrc & RTsrc & code & TCODE {
     if (RSsrc >= RTsrc) goto <done>;
-    tmp:2=code;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 00ss ssst tttt cccc cccc cc11 0110
-:tne RSsrc, RTsrc               		is prime=0 & fct=54 & RSsrc & RTsrc & code {
+:tne RSsrc, RTsrc^TCODE             		is prime=0 & fct=54 & RSsrc & RTsrc & code & TCODE {
     if (RSsrc == RTsrc) goto <done>;
-    tmp:2=code;
+    tmp:2 = code;
     trap(tmp);
     <done>
 }
 
-# 0000 01ss sss0 1110 iiii iiii iiii iiii
 :tnei RSsrc, simmed             		is prime=1 & cond=14 & RSsrc & simmed {
     if (RSsrc == simmed) goto <done>;
     trap();

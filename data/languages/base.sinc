@@ -77,8 +77,11 @@ define token instr(32)
 
     immed       = (0,15)
     immed26     = (0,25)
+    imm25       = (0,24)
+    pcreg       = (1,5)
     simmed      = (0,15) signed
     imm15       = (6,20)
+    vuimm15     = (6,20)
 
     off21		= (0,20) signed		# 21 bit signed offset in conditional branch/link
     off16		= (0,15) signed		# 16 bit signed offset in conditional branch/link
@@ -154,6 +157,7 @@ define token instr(32)
     vul22_24     = (22,24)
 ;
 
+
 # 64 bit
 attach variables [ rs rt rd base ] [
     zero  at  v0  v1  a0  a1  a2  a3
@@ -181,8 +185,10 @@ attach variables [ rs32 rt32 rd32 ] [
 #different sized registers
 RD128: rd        is rd & rd128      { export rd128; }
 RS128src: rs     is rs & rs128      { export rs128; }
+RS128src: rs     is rs & rs=0       { z:16 = zext(0:8); export z; }
 RT128: rt        is rt & rt128      { export rt128; }
 RT128src: rt     is rt & rt128      { export rt128; }
+RT128src: rt     is rt & rt=0       { z:16 = zext(0:8); export z; }
 
 RD: rd      	is rd	        	{ export rd; }
 RSsrc: rs   	is rs	        	{ export rs; }
@@ -203,3 +209,4 @@ Rel16: reloc		is off16	[ reloc=inst_start+4+4*off16; ]					{ export *:4 reloc; }
 Abs26: reloc		is ind26	[ reloc=((inst_start+4) $and 0xfffffffff0000000) | 4*ind26; ]	{ export *:4 reloc; }
 
 OFF_BASE: simmed(base)  	is simmed & base    { tmp:4 = base:4 + simmed; export tmp; }
+OFF_BASE: simmed(base)  	is simmed & base & base=0 { tmp:4 = simmed; export tmp; }
