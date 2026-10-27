@@ -50,6 +50,10 @@ Elf e_flags are used for the secondary attribute, the following are pulled from 
     <constraint primary="8,10" processor="MIPS-R5900" size="32" variant="PS2"
 		secondary= "0b 0010 .... .... .... 0.00 0.0. 0000 ...."/>
 
+    <!-- EF_MIPS_MACH = 0x92 (E_MIPS_MACH_5900): any ABI. Current ps2dev GCC writes n32 (abi2) ELFs, e.g. e_flags 0x20920025 -->
+    <constraint primary="8,10" processor="MIPS-R5900" size="32" variant="PS2"
+		secondary= "0b .... .... 1001 0010 .... .... .... ...."/>
+
     </constraint>
 
 </opinions>
