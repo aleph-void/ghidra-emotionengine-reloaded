@@ -180,6 +180,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ VFTy;
     rz:4 = VFSz f+ VFTz;
     rw:4 = VFSw f+ VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -191,6 +203,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* VFTy);
     rz:4 = vuACCz f+ (VFSz f* VFTz);
     rw:4 = vuACCw f+ (VFSw f* VFTw);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -202,6 +226,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* VFTy;
     rz:4 = VFSz f* VFTz;
     rw:4 = VFSw f* VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -224,6 +260,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- VFTy;
     rz:4 = VFSz f- VFTz;
     rw:4 = VFSw f- VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -235,6 +283,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* VFTy);
     rz:4 = vuACCz f- (VFSz f* VFTz);
     rw:4 = vuACCw f- (VFSw f* VFTw);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -258,6 +318,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ b;
     rz:4 = VFSz f+ b;
     rw:4 = VFSw f+ b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -270,6 +342,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- b;
     rz:4 = VFSz f- b;
     rw:4 = VFSw f- b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -282,6 +366,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* b);
     rz:4 = vuACCz f+ (VFSz f* b);
     rw:4 = vuACCw f+ (VFSw f* b);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -294,6 +390,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* b);
     rz:4 = vuACCz f- (VFSz f* b);
     rw:4 = vuACCw f- (VFSw f* b);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -330,6 +438,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* b;
     rz:4 = VFSz f* b;
     rw:4 = VFSw f* b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -341,6 +461,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* vi22;
     rz:4 = VFSz f* vi22;
     rw:4 = VFSw f* vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -352,6 +484,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ vi22;
     rz:4 = VFSz f+ vi22;
     rw:4 = VFSw f+ vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -363,6 +507,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* vi22);
     rz:4 = vuACCz f+ (VFSz f* vi22);
     rw:4 = vuACCw f+ (VFSw f* vi22);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -374,6 +530,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- vi22;
     rz:4 = VFSz f- vi22;
     rw:4 = VFSw f- vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -385,6 +553,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* vi22);
     rz:4 = vuACCz f- (VFSz f* vi22);
     rw:4 = vuACCw f- (VFSw f* vi22);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -407,6 +587,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* vi21;
     rz:4 = VFSz f* vi21;
     rw:4 = VFSw f* vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -429,6 +621,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ vi21;
     rz:4 = VFSz f+ vi21;
     rw:4 = VFSw f+ vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -440,6 +644,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* vi21);
     rz:4 = vuACCz f+ (VFSz f* vi21);
     rw:4 = vuACCw f+ (VFSw f* vi21);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -451,6 +667,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- vi21;
     rz:4 = VFSz f- vi21;
     rw:4 = VFSw f- vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -462,6 +690,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* vi21);
     rz:4 = vuACCz f- (VFSz f* vi21);
     rw:4 = vuACCw f- (VFSw f* vi21);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -472,6 +712,16 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     rx:4 = vuACCx f- (VFSy f* VFTz);
     ry:4 = vuACCy f- (VFSz f* VFTx);
     rz:4 = vuACCz f- (VFSx f* VFTy);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; WFDx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; WFDy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; WFDz = rz; <sz>
@@ -504,6 +754,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ VFTy;
     rz:4 = VFSz f+ VFTz;
     rw:4 = VFSw f+ VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -515,6 +777,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* VFTy);
     rz:4 = vuACCz f+ (VFSz f* VFTz);
     rw:4 = vuACCw f+ (VFSw f* VFTw);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -526,6 +800,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* VFTy;
     rz:4 = VFSz f* VFTz;
     rw:4 = VFSw f* VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -537,6 +823,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- VFTy;
     rz:4 = VFSz f- VFTz;
     rw:4 = VFSw f- VFTw;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -548,6 +846,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* VFTy);
     rz:4 = vuACCz f- (VFSz f* VFTz);
     rw:4 = vuACCw f- (VFSw f* VFTw);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -560,6 +870,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ b;
     rz:4 = VFSz f+ b;
     rw:4 = VFSw f+ b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -572,6 +894,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- b;
     rz:4 = VFSz f- b;
     rw:4 = VFSw f- b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -584,6 +918,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* b);
     rz:4 = vuACCz f+ (VFSz f* b);
     rw:4 = vuACCw f+ (VFSw f* b);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -596,6 +942,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* b);
     rz:4 = vuACCz f- (VFSz f* b);
     rw:4 = vuACCw f- (VFSw f* b);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -608,6 +966,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* b;
     rz:4 = VFSz f* b;
     rw:4 = VFSw f* b;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -619,6 +989,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ vi22;
     rz:4 = VFSz f+ vi22;
     rw:4 = VFSw f+ vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -630,6 +1012,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* vi22);
     rz:4 = vuACCz f+ (VFSz f* vi22);
     rw:4 = vuACCw f+ (VFSw f* vi22);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -641,6 +1035,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- vi22;
     rz:4 = VFSz f- vi22;
     rw:4 = VFSw f- vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -652,6 +1058,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* vi22);
     rz:4 = vuACCz f- (VFSz f* vi22);
     rw:4 = vuACCw f- (VFSw f* vi22);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -663,6 +1081,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* vi22;
     rz:4 = VFSz f* vi22;
     rw:4 = VFSw f* vi22;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -674,6 +1104,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f+ vi21;
     rz:4 = VFSz f+ vi21;
     rw:4 = VFSw f+ vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -685,6 +1127,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f+ (VFSy f* vi21);
     rz:4 = vuACCz f+ (VFSz f* vi21);
     rw:4 = vuACCw f+ (VFSw f* vi21);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -696,6 +1150,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f- vi21;
     rz:4 = VFSz f- vi21;
     rw:4 = VFSw f- vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -707,6 +1173,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = vuACCy f- (VFSy f* vi21);
     rz:4 = vuACCz f- (VFSz f* vi21);
     rw:4 = vuACCw f- (VFSw f* vi21);
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -718,6 +1196,18 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     ry:4 = VFSy f* vi21;
     rz:4 = VFSz f* vi21;
     rw:4 = VFSw f* vi21;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    ew:4 = rw & 0x7f800000; dw:4 = zext((dm & 1) != 0);
+    mac = mac | ((zext((rw & 0x7fffffff) == 0) << 0) | ((rw >> 31) << 4) | (zext(ew == 0 && (rw & 0x7fffff) != 0) << 8) | (zext(ew == 0x7f800000) << 12)) * dw;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -728,6 +1218,16 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     rx:4 = VFSy f* VFTz;
     ry:4 = VFSz f* VFTx;
     rz:4 = VFSx f* VFTy;
+    mac:4 = 0;
+    ex:4 = rx & 0x7f800000; dx:4 = zext((dm & 8) != 0);
+    mac = mac | ((zext((rx & 0x7fffffff) == 0) << 3) | ((rx >> 31) << 7) | (zext(ex == 0 && (rx & 0x7fffff) != 0) << 11) | (zext(ex == 0x7f800000) << 15)) * dx;
+    ey:4 = ry & 0x7f800000; dy:4 = zext((dm & 4) != 0);
+    mac = mac | ((zext((ry & 0x7fffffff) == 0) << 2) | ((ry >> 31) << 6) | (zext(ey == 0 && (ry & 0x7fffff) != 0) << 10) | (zext(ey == 0x7f800000) << 14)) * dy;
+    ez:4 = rz & 0x7f800000; dz:4 = zext((dm & 2) != 0);
+    mac = mac | ((zext((rz & 0x7fffffff) == 0) << 1) | ((rz >> 31) << 5) | (zext(ez == 0 && (rz & 0x7fffff) != 0) << 9) | (zext(ez == 0x7f800000) << 13)) * dz;
+    vi17 = mac;
+    st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | (zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);
+    vi16 = (vi16 & 0xff0) | st | (st << 6);
     if ((dm & 8) == 0) goto <sx>; vuACCx = rx; <sx>
     if ((dm & 4) == 0) goto <sy>; vuACCy = ry; <sy>
     if ((dm & 2) == 0) goto <sz>; vuACCz = rz; <sz>
@@ -919,13 +1419,23 @@ define pcodeop vrnext;         # R register LFSR step: the generator polynomial 
     vi18 = cf | zext(VFSx f> wa) | (zext(VFSx f< wn) << 1) | (zext(VFSy f> wa) << 2) | (zext(VFSy f< wn) << 3) | (zext(VFSz f> wa) << 4) | (zext(VFSz f< wn) << 5);
 }
 :vdiv "Q", vufs^fsf, vuft^ftf is vuinst & fsf & ftf & FSF & FTF & vufs & vuft & vuop_0_10=0x3bc {
-    vi22 = FSF f/ FTF;
+    n:4 = FSF; d:4 = FTF;
+    i:4 = zext((n & 0x7fffffff) == 0 && (d & 0x7fffffff) == 0);
+    z:4 = zext((n & 0x7fffffff) != 0 && (d & 0x7fffffff) == 0);
+    vi16 = (vi16 & 0xfcf) | (i << 4) | (z << 5) | (i << 10) | (z << 11);
+    vi22 = n f/ d;
 }
 :vsqrt "Q", vuft^ftf is vuinst & ftf & FTF & vuft & vuop_0_10=0x3bd {
-    vi22 = sqrt(abs(FTF));
+    d:4 = FTF; i:4 = zext((d & 0x80000000) != 0 && (d & 0x7fffffff) != 0);
+    vi16 = (vi16 & 0xfcf) | (i << 4) | (i << 10);
+    vi22 = sqrt(abs(d));
 }
 :vrsqrt "Q", vufs^fsf, vuft^ftf is vuinst & fsf & ftf & FSF & FTF & vufs & vuft & vuop_0_10=0x3be {
-    vi22 = FSF f/ sqrt(abs(FTF));
+    n:4 = FSF; d:4 = FTF;
+    i:4 = zext((d & 0x80000000) != 0 && (d & 0x7fffffff) != 0);
+    z:4 = zext((d & 0x7fffffff) == 0);
+    vi16 = (vi16 & 0xfcf) | (i << 4) | (z << 5) | (i << 10) | (z << 11);
+    vi22 = n f/ sqrt(abs(d));
 }
 :vwaitq is vuinst & vuop_0_10=0x3bf {
 }

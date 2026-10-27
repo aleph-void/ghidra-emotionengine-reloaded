@@ -516,12 +516,40 @@ def arith(nm, a, b, c):
             'max': fmax(a, b), 'mini': fmin(a, b)}[nm]
 
 
-def masked(target, exprs, pre=(), lanes=XYZW):
+FMAC_FLAGS = ('add', 'sub', 'mul', 'madd', 'msub')
+
+
+def mac_flags(lanes):
+    """MAC flags (vi17) and Status (vi16) after an FMAC operation, from the lane results r<c>.
+    MAC: bits 3..0 Z, 7..4 S, 11..8 U, 15..12 O, lane x in the highest bit of each group; lanes not
+    written by dest are 0. Status: bits 0..3 Z S U O (OR over the MAC groups), sticky copies in 6..9;
+    I, D (4, 5) and their sticky bits are kept. Overflow is an infinite or NaN IEEE result, underflow a
+    non-zero denormal one (the VU clamps / flushes them instead: see GHIDRA-RARE.md)."""
+    body = ['mac:4 = 0;']
+    for k, c in enumerate(XYZW):
+        if c not in lanes:
+            continue
+        b = 3 - k
+        body.append(f'e{c}:4 = r{c} & 0x7f800000; d{c}:4 = zext((dm & {1 << b}) != 0);')
+        body.append(f'mac = mac | ((zext((r{c} & 0x7fffffff) == 0) << {b}) | ((r{c} >> 31) << {4 + b}) | '
+                    f'(zext(e{c} == 0 && (r{c} & 0x7fffff) != 0) << {8 + b}) | '
+                    f'(zext(e{c} == 0x7f800000) << {12 + b})) * d{c};')
+    body.append('vi17 = mac;')
+    body.append('st:4 = zext((mac & 0xf) != 0) | (zext((mac & 0xf0) != 0) << 1) | '
+                '(zext((mac & 0xf00) != 0) << 2) | (zext((mac & 0xf000) != 0) << 3);')
+    body.append('vi16 = (vi16 & 0xff0) | st | (st << 6);')
+    return body
+
+
+def masked(target, exprs, pre=(), lanes=XYZW, flags=False):
     """Write exprs[c] to the dest-selected lanes of target ('FD', 'FT', 'FS' write subtables or 'ACC').
-    All lane results are computed before any lane is written (operands may alias the destination)."""
+    All lane results are computed before any lane is written (operands may alias the destination).
+    flags: the operation is an FMAC operation and updates the MAC and Status flags."""
     body = list(pre) + ['dm:1 = vudest;']
     for c in lanes:
         body.append(f'r{c}:4 = {exprs[c]};')
+    if flags:
+        body += mac_flags(lanes)
     for k, c in enumerate(XYZW):
         if c not in lanes:
             continue
@@ -609,18 +637,19 @@ def vu():
     fsw = ' & '.join(f'WFS{c}' for c in XYZW)
     for nm, f in fct_full.items():
         U(f'v{nm}^dest vufd, vufs, vuft', f'vuinst & dest & vufd & vufs & vuft & {fsl} & {ftl} & {fdw} & vuop_0_5={f}',
-          masked('FD', {c: arith(nm, f'VFS{c}', f'VFT{c}', f'vuACC{c}') for c in XYZW}))
+          masked('FD', {c: arith(nm, f'VFS{c}', f'VFT{c}', f'vuACC{c}') for c in XYZW}, flags=nm in FMAC_FLAGS))
     for nm, f in fct_bc.items():
         U(f'v{nm}^bc^dest vufd, vufs, vuft^bcs', f'vuinst & dest & bc & bcs & BCT & vufd & vufs & vuft & {fsl} & {fdw} & '
-          f'vuop_2_5={f}', masked('FD', {c: arith(nm, f'VFS{c}', 'b', f'vuACC{c}') for c in XYZW}, ['b:4 = BCT;']))
+          f'vuop_2_5={f}', masked('FD', {c: arith(nm, f'VFS{c}', 'b', f'vuACC{c}') for c in XYZW}, ['b:4 = BCT;'],
+                 flags=nm in FMAC_FLAGS))
     for nm, f in fct_q.items():
         U(f'v{nm}q^dest vufd, vufs, "Q"', f'vuinst & dest & vufd & vufs & {fsl} & {fdw} & vuop_0_5={f}',
-          masked('FD', {c: arith(nm, f'VFS{c}', 'vi22', f'vuACC{c}') for c in XYZW}))
+          masked('FD', {c: arith(nm, f'VFS{c}', 'vi22', f'vuACC{c}') for c in XYZW}, flags=nm in FMAC_FLAGS))
     for nm, f in fct_i.items():
         U(f'v{nm}i^dest vufd, vufs, "I"', f'vuinst & dest & vufd & vufs & {fsl} & {fdw} & vuop_0_5={f}',
-          masked('FD', {c: arith(nm, f'VFS{c}', 'vi21', f'vuACC{c}') for c in XYZW}))
+          masked('FD', {c: arith(nm, f'VFS{c}', 'vi21', f'vuACC{c}') for c in XYZW}, flags=nm in FMAC_FLAGS))
     U('vopmsub^dest vufd, vufs, vuft', f'vuinst & dest & vufd & vufs & vuft & {fsl} & {ftl} & {fdw} & vuop_0_5=0x2e',
-      masked('FD', {c: f'vuACC{c} f- (VFS{CROSS[c][0]} f* VFT{CROSS[c][1]})' for c in XYZW}, lanes='xyz'))
+      masked('FD', {c: f'vuACC{c} f- (VFS{CROSS[c][0]} f* VFT{CROSS[c][1]})' for c in XYZW}, lanes='xyz', flags=True))
     # integer operations on vi0-vi15 (16-bit)
     for nm, f, op in (('viadd', 0x30, '+'), ('visub', 0x31, '-'), ('viand', 0x34, '&'), ('vior', 0x35, '|')):
         U(f'{nm} WID, RIS, RIT', f'vuinst & WID & RIS & RIT & vuop_0_5={f}', [f'WID = (RIS {op} RIT) & 0xffff;'])
@@ -637,19 +666,19 @@ def vu():
     for nm, f in acc_full.items():
         # GNU objdump and rabbitizer both list VADDA's and VMSUBA's operands as ft, fs (same result)
         U(f'v{nm}^dest "ACC", vuft, vufs' if nm in ('adda', 'msuba') else f'v{nm}^dest "ACC", vufs, vuft', f'vuinst & dest & vufs & vuft & {fsl} & {ftl} & vuop_0_10={f}',
-          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', f'VFT{c}', f'vuACC{c}') for c in XYZW}))
+          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', f'VFT{c}', f'vuACC{c}') for c in XYZW}, flags=True))
     for nm, f in acc_bc.items():
         U(f'v{nm}^bc^dest "ACC", vufs, vuft^bcs', f'vuinst & dest & bc & bcs & BCT & vufs & vuft & {fsl} & '
           f'vuop_2_10={f >> 2}', masked('ACC', {c: arith(base_of[nm], f'VFS{c}', 'b', f'vuACC{c}') for c in XYZW},
-                                       ['b:4 = BCT;']))
+                                       ['b:4 = BCT;'], flags=True))
     for nm, f in acc_q.items():
         U(f'v{nm}q^dest "ACC", vufs, "Q"', f'vuinst & dest & vufs & {fsl} & vuop_0_10={f}',
-          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', 'vi22', f'vuACC{c}') for c in XYZW}))
+          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', 'vi22', f'vuACC{c}') for c in XYZW}, flags=True))
     for nm, f in acc_i.items():
         U(f'v{nm}i^dest "ACC", vufs, "I"', f'vuinst & dest & vufs & {fsl} & vuop_0_10={f}',
-          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', 'vi21', f'vuACC{c}') for c in XYZW}))
+          masked('ACC', {c: arith(base_of[nm], f'VFS{c}', 'vi21', f'vuACC{c}') for c in XYZW}, flags=True))
     U('vopmula^dest "ACC", vufs, vuft', f'vuinst & dest & vufs & vuft & {fsl} & {ftl} & vuop_0_10=0x2fe',
-      masked('ACC', {c: f'VFS{CROSS[c][0]} f* VFT{CROSS[c][1]}' for c in XYZW}, lanes='xyz'))
+      masked('ACC', {c: f'VFS{CROSS[c][0]} f* VFT{CROSS[c][1]}' for c in XYZW}, lanes='xyz', flags=True))
     U('vnop', 'vuinst & vuop_0_10=0x2ff', [])
     # conversions: fixed-point scale 2^0, 2^4, 2^12, 2^15
     for k, (nm, f) in enumerate((('vitof0', 0x13c), ('vitof4', 0x13d), ('vitof12', 0x13e), ('vitof15', 0x13f))):
@@ -685,10 +714,20 @@ def vu():
        '(zext(VFSy f< wn) << 3) | (zext(VFSz f> wa) << 4) | (zext(VFSz f< wn) << 5);'])
     # Q (division unit)
     U('vdiv "Q", vufs^fsf, vuft^ftf', 'vuinst & fsf & ftf & FSF & FTF & vufs & vuft & vuop_0_10=0x3bc',
-      ['vi22 = FSF f/ FTF;'])
-    U('vsqrt "Q", vuft^ftf', 'vuinst & ftf & FTF & vuft & vuop_0_10=0x3bd', ['vi22 = sqrt(abs(FTF));'])
+      ['n:4 = FSF; d:4 = FTF;',
+       'i:4 = zext((n & 0x7fffffff) == 0 && (d & 0x7fffffff) == 0);',
+       'z:4 = zext((n & 0x7fffffff) != 0 && (d & 0x7fffffff) == 0);',
+       'vi16 = (vi16 & 0xfcf) | (i << 4) | (z << 5) | (i << 10) | (z << 11);',
+       'vi22 = n f/ d;'])
+    U('vsqrt "Q", vuft^ftf', 'vuinst & ftf & FTF & vuft & vuop_0_10=0x3bd', ['d:4 = FTF; i:4 = zext((d & 0x80000000) != 0 && (d & 0x7fffffff) != 0);',
+       'vi16 = (vi16 & 0xfcf) | (i << 4) | (i << 10);',
+       'vi22 = sqrt(abs(d));'])
     U('vrsqrt "Q", vufs^fsf, vuft^ftf', 'vuinst & fsf & ftf & FSF & FTF & vufs & vuft & vuop_0_10=0x3be',
-      ['vi22 = FSF f/ sqrt(abs(FTF));'])
+      ['n:4 = FSF; d:4 = FTF;',
+       'i:4 = zext((d & 0x80000000) != 0 && (d & 0x7fffffff) != 0);',
+       'z:4 = zext((d & 0x7fffffff) == 0);',
+       'vi16 = (vi16 & 0xfcf) | (i << 4) | (z << 5) | (i << 10) | (z << 11);',
+       'vi22 = n f/ sqrt(abs(d));'])
     U('vwaitq', 'vuinst & vuop_0_10=0x3bf', [])
     # integer <-> float register transfers
     U('vmtir WIT, vufs^fsf', 'vuinst & fsf & WIT & FSF & vufs & vuop_0_10=0x3fc', ['WIT = FSF & 0xffff;'])
