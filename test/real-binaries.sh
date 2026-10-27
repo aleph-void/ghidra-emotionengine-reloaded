@@ -32,8 +32,8 @@ for s in "${SAMPLES[@]}"; do
 	n=$(echo "$s" | tr / _)
 	"$HERE/ghidra-script.sh" auto - "$elf" RealCheck.java "$W/out/$n.sum" "$W/out/$n.lst" 100000
 	grep -q '^language r5900:LE:32:default' "$W/out/$n.sum" || { echo "$s: wrong language"; fail=1; }
-	cmp=$(python3 "$HERE/real_compare.py" "$W/out/$n.lst" "$elf" > "$W/out/$n.cmp" && head -1 "$W/out/$n.cmp" ||
-		{ fail=1; head -1 "$W/out/$n.cmp"; })
+	python3 "$HERE/real_compare.py" "$W/out/$n.lst" "$elf" > "$W/out/$n.cmp" || fail=1
+	cmp=$(head -1 "$W/out/$n.cmp")
 	errs=$(grep -c '^Error/' "$W/out/$n.sum" || true)
 	warns=$(grep '^Warning/' "$W/out/$n.sum" | grep -v -c -E 'non-existing memory at 00000000|GP Global Register|Warning/DWARF' || true)
 	df=$(sed -n 's/^decompiled [0-9]* failed \([0-9]*\).*/\1/p' "$W/out/$n.sum")
